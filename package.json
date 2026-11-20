@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "css": "^2.2.1",
+    "reveal.js": "^6.0.2"
+  }
+}

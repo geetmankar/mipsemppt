@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Tea vs Coffee</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- reveal.js core + theme -->
+    <link rel="stylesheet" href="dist/reveal.css">
+    <link rel="stylesheet" href="dist/theme/black.css">
+
+    <!-- code highlighting style (see note below if this file is not found) -->
+    <link rel="stylesheet" href="plugin/highlight/monokai.css">
+    <link rel="stylesheet" href="css/theme-blur.css">
+</head>
+
+<body>
+    <div class="reveal">
+        <div class="slides" id="slides"> </div>
+    </div>
+
+    <script src="dist/reveal.js"></script>
+    <script src="dist/plugin/notes.js"></script>
+    <script src="dist/plugin/highlight.js"></script>
+<script>
+    // The order of this list is the order of your presentation
+    const slideFiles = [
+        'slides/01-title.html',
+        'slides/02-tea.html',
+        'slides/03-contenders.html',
+        'slides/04-animate.html',
+        'slides/05-code.html',
+        'slides/06-thanks.html'
+    ];
+
+    async function loadSlides() {
+        const parts = await Promise.all(
+            slideFiles.map(async (file) => {
+                const response = await fetch(file);
+                if (!response.ok) throw new Error(`Could not load ${file} (${response.status})`);
+                return response.text();
+            })
+        );
+
+        document.getElementById('slides').innerHTML = parts.join('\n');
+
+        Reveal.initialize({
+            hash: true,
+            transition: 'slide',
+            plugins: [RevealNotes, RevealHighlight]
+        });
+    }
+
+    loadSlides().catch(console.error);
+</script>
+</body>
+
+</html>

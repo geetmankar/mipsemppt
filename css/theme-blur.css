@@ -1,0 +1,37 @@
+:root {
+    --bg-image: url("../img/Black_hole_Messier_87.jpg");
+    /* path is relative to this CSS file */
+    --bg-blur: 12px;
+    /* 0px = sharp, 20px+ = very soft */
+    --bg-dim: 0.85;
+    /* dark overlay for text readability, 0 to 1 */
+    --bg-position: center;
+    --bg-size: cover;
+}
+
+/* Let our background show through instead of the theme's solid color */
+html {
+    background: #111;
+}
+
+body,
+.reveal-viewport {
+    background: transparent !important;
+}
+
+/* The blurred image layer, behind all slides */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background-image:
+        linear-gradient(rgba(0, 0, 0, var(--bg-dim)), rgba(0, 0, 0, var(--bg-dim))),
+        var(--bg-image);
+    background-position: var(--bg-position);
+    background-size: var(--bg-size);
+    background-repeat: no-repeat;
+    filter: blur(var(--bg-blur));
+    transform: scale(1.1);
+    /* hides the soft, faded edges blur creates */
+}
