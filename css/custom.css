@@ -1,0 +1,128 @@
+.pie {
+  width: 360px;
+  height: 360px;
+  transform: rotate(-90deg);          /* start at 12 o'clock */
+}
+
+.pie .slice {
+  fill: none;
+  stroke-width: 16;                   /* 2 x radius, so the circle fills in as a pie */
+  stroke-dasharray: 0 100;            /* hidden */
+  stroke-dashoffset: calc(var(--start) * -1px);
+  transition: stroke-dasharray 0.8s ease-out;
+  transition-delay: calc(var(--i) * 0.8s);   /* slices sweep in one after another */
+}
+
+/* grows when the slide becomes the current one, replays every visit */
+.reveal section.present .pie .slice {
+  stroke-dasharray: calc(var(--pct) * 1px) 100;
+}
+
+.legend { list-style: none; margin: 0; padding: 0; text-align: left; }
+.legend li { display: flex; align-items: center; gap: 14px; margin: 10px 0; }
+.legend span { width: 22px; height: 22px; border-radius: 4px; display: inline-block; }
+/* lets CSS animate the sweep angle */
+@property --sweep {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+
+.pie-layout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 70px;
+}
+
+/* ---------- 3D pie ---------- */
+.pie3d-stage {
+  width: 560px;
+  height: 380px;
+  perspective: 1100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.reveal section.present .pie3d-stage {
+  opacity: 1;
+}
+
+.pie3d {
+  position: relative;
+  width: 320px;
+  height: 320px;
+  transform-style: preserve-3d;
+  transform: rotateX(15deg) rotateZ(-160deg) scale(0.6);
+  transition: transform 1.4s cubic-bezier(.2, .8, .2, 1);
+  will-change: transform;
+}
+
+.reveal section.present .pie3d {
+  transform: rotateX(58deg) rotateZ(-20deg) scale(1);
+}
+
+.pie3d .layer {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  /* shading overlay + slices in one static background */
+  background-image:
+    linear-gradient(rgba(0, 0, 0, var(--shade)), rgba(0, 0, 0, var(--shade))),
+    var(--pie-gradient);
+}
+
+.pie3d .label {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  /* move to the slice in the pie's plane, undo the pie's tilt (same angles as
+     the .present rule: rotateZ(-20deg) rotateX(58deg)), then centre on the point */
+  transform: translate3d(var(--x), var(--y), 40px)
+             rotateZ(20deg) rotateX(-58deg)
+             translate(-50%, -50%);
+  white-space: nowrap;
+  text-align: center;
+  font-size: 0.65em;
+  font-weight: 600;
+  line-height: 1.15;
+  padding: 4px 12px;
+  background: rgba(20, 20, 20, 0.7);
+  border-bottom: 3px solid var(--c);
+  border-radius: 6px;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  transition-delay: calc(1.3s + var(--i) * 0.15s);  /* after the pie settles */
+}
+
+.pie3d .label small {
+  display: block;
+  font-size: 0.8em;
+  font-weight: 400;
+  color: var(--c);
+}
+
+.reveal section.present .pie3d .label {
+  opacity: 1;
+}
+/* ---------- tiles ---------- */
+/* hide the right-hand tiles; the script still reads their data */
+.tiles {
+  position: absolute;
+  visibility: hidden;
+  pointer-events: none;
+}
+.pie3d .label {
+  /* replaces the old transition line: opacity keeps its delay, the highlight is instant */
+  transition: opacity 0.6s ease calc(1.3s + var(--i) * 0.15s),
+              scale 0.3s ease,
+              background 0.3s ease;
+}
+
+.pie3d .label.active {
+  scale: 1.3;
+  background: rgba(60, 60, 60, 0.95);
+}
