@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Tea vs Coffee</title>
+    <title>Weak Gravvitational Lensing</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- reveal.js core + theme -->
@@ -13,6 +13,7 @@
     <!-- code highlighting style (see note below if this file is not found) -->
     <link rel="stylesheet" href="plugin/highlight/monokai.css">
     <link rel="stylesheet" href="css/theme-blur.css">
+    <link rel="stylesheet" href="css/custom.css">
 </head>
 
 <body>
@@ -27,11 +28,14 @@
     // The order of this list is the order of your presentation
     const slideFiles = [
         'slides/01-title.html',
-        'slides/02-tea.html',
-        'slides/03-contenders.html',
-        'slides/04-animate.html',
-        'slides/05-code.html',
-        'slides/06-thanks.html'
+        'slides/02-context.html',
+        'slides/03.1-spacebending.html',
+        'slides/03.2-darkmatter.html',
+        'slides/03.3-lightbending.html',
+        'slides/04-galaxies.html',
+        'slides/05-shape-measurement.html',
+        'slides/06-bias.html',
+        'slides/07-solution.html',
     ];
 
     async function loadSlides() {
@@ -45,11 +49,87 @@
 
         document.getElementById('slides').innerHTML = parts.join('\n');
 
+        function paint(pie, active) {
+          let t = 0;
+          const stops = pie._slices.map((s, i) => {
+            const c = (active === null || i === active)
+              ? s.color
+              : `color-mix(in srgb, ${s.color} 30%, #222)`;   // dimmed
+            const stop = `${c} ${t}% ${t + s.pct}%`;
+            t += s.pct;
+            return stop;
+          });
+          pie.style.setProperty('--pie-gradient', `conic-gradient(${stops.join(', ')})`);
+          pie.querySelectorAll('.label').forEach((l, i) =>
+            l.classList.toggle('active', i === active));
+        }
+
+        document.querySelectorAll('.pie3d').forEach((pie) => {
+          const tiles = pie.closest('section').querySelectorAll('.tile');
+          const stops = [];
+          pie._slices = [];
+          const radius = 160;          // half of .pie3d's width
+          const labelRadius = radius * 1.28;   // how far outside the pie the labels sit
+          let total = 0;
+
+          tiles.forEach((tile, i) => {
+            const pct = parseFloat(tile.dataset.pct);
+            const color = tile.dataset.color;
+            pie._slices.push({ pct, color });
+            stops.push(`${color} ${total}% ${total + pct}%`);
+            tile.style.setProperty('--c', color);
+            tile.style.setProperty('--i', i);
+
+            // label at the middle of the slice (conic-gradient starts at 12 o'clock, clockwise)
+            const mid = ((total + pct / 2) / 100) * 2 * Math.PI;
+            const label = document.createElement('div');
+            label.className = 'label';
+            label.innerHTML =
+              `${tile.querySelector('.tile-title').textContent}` +
+              `<small>${pct}%</small>`;
+            label.style.setProperty('--x', `${(Math.sin(mid) * labelRadius).toFixed(1)}px`);
+            label.style.setProperty('--y', `${(-Math.cos(mid) * labelRadius).toFixed(1)}px`);
+            label.style.setProperty('--c', color);
+            label.style.setProperty('--i', i);
+            pie.appendChild(label);
+
+            total += pct;
+          });
+
+          // pie.style.setProperty('--pie-gradient', `conic-gradient(${stops.join(', ')})`);
+          paint(pie, null);
+
+          const depth = 30, step = 3;
+          const frag = document.createDocumentFragment();
+          for (let z = 0; z <= depth; z += step) {
+            const layer = document.createElement('div');
+            layer.className = 'layer';
+            layer.style.transform = `translateZ(${z}px)`;
+            layer.style.setProperty('--shade', z === depth ? 0 : (0.55 - 0.3 * z / depth).toFixed(2));
+            frag.appendChild(layer);
+          }
+          pie.appendChild(frag);
+        });
+        // ------------------------------------------------------------
         Reveal.initialize({
             hash: true,
             transition: 'slide',
             plugins: [RevealNotes, RevealHighlight]
         });
+
+        // show the highlight that matches the fragments currently visible in a slide
+        function syncHighlight(section) {
+          const pie = section && section.querySelector('.pie3d');
+          if (!pie) return;
+          const shown = section.querySelectorAll('.fragment.visible[data-highlight]');
+          const last = shown[shown.length - 1];
+          const v = last ? last.dataset.highlight : 'none';
+          paint(pie, v === 'none' ? null : parseInt(v, 10));
+        }
+
+        Reveal.on('fragmentshown',  (e) => syncHighlight(e.fragment.closest('section')));
+        Reveal.on('fragmenthidden', (e) => syncHighlight(e.fragment.closest('section')));
+        Reveal.on('slidechanged',   (e) => syncHighlight(e.currentSlide));
     }
 
     loadSlides().catch(console.error);
