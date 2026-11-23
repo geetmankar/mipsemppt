@@ -37,6 +37,7 @@
         'slides/06-bias.html',
         'slides/07-solution.html',
         'slides/07.1-image-sims.html',
+        'slides/07.2-correlation.html',
     ];
 
     async function loadSlides() {
@@ -115,7 +116,7 @@
         Reveal.initialize({
             hash: true,
             transition: 'slide',
-            plugins: [RevealNotes, RevealHighlight]
+            plugins: [RevealNotes, RevealHighlight, RevealMath.KaTeX]
         });
 
         // show the highlight that matches the fragments currently visible in a slide
